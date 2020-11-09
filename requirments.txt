@@ -1,0 +1,10 @@
+django
+djangorestframework
+pygments
+markdown
+django-filter
+djangorestframework-jwt
+django-cors-headers
+djangorestframework-oauth
+django-oauth-toolkit
+django_rest_passwordreset
