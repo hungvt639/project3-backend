@@ -65,3 +65,6 @@ class Describe(models.Model):
     product = models.ForeignKey(Products, related_name="describe", on_delete=models.CASCADE)
     header = models.CharField(max_length=100)
     context = models.CharField(max_length=200)
+
+    def __str__(self):
+        return str(self.product) + ": " + self.header

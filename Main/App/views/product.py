@@ -1,9 +1,7 @@
-from ..models.product import Types, Products, Details, Amounts, Image
-from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, ImageSerializer
-from rest_framework import generics
+from ..models.product import Types, Products, Details, Amounts, Image, Describe
+from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, ImageSerializer, DescribeSerializer
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import permissions
+from rest_framework import status, permissions, parsers, generics
 from django.core.paginator import Paginator
 from ..utils.check_permission import check_permission
 
@@ -149,11 +147,84 @@ class Amount(generics.ListCreateAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        perm = "App.add_details"
+        perm = "App.add_amounts"
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
                 serializer = AmountsSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    response = {
+                        "data": data
+                    }
+                    return Response(response, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status_code)
+
+
+class Images(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    serializer_class = ImageSerializer
+    parser_classes = (parsers.JSONParser, parsers.MultiPartParser, )
+
+    def get(self, request, *args, **kwargs):
+        image = Image.objects.all()
+        serializer = ImageSerializer(image, many=True)
+        response = {
+            "data": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        perm = "App.add_image"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                serializer = ImageSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    response = {
+                        "data": data
+                    }
+                    return Response(response, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status_code)
+
+
+class Describes(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    serializer_class = DescribeSerializer
+
+    def get(self, request, *args, **kwargs):
+        describe = Describe.objects.all()
+        serializer = DescribeSerializer(describe, many=True)
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 20))
+        pagination = Paginator(serializer.data, limit)
+        result = pagination.get_page(page)
+        response = {
+            "total": describe.count(),
+            "data": result.object_list,
+            "page": result.number,
+            "has_next": result.has_next(),
+            "has_prev": result.has_previous()
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        perm = "App.add_describe"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                serializer = DescribeSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
