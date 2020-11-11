@@ -44,7 +44,7 @@ class Details(models.Model):
 
 
 class Amounts(models.Model):
-    detail = models.ForeignKey(Details, related_name="amounts", on_delete=models.CASCADE)
+    detail = models.ForeignKey(Details, related_name="amounts", on_delete=models.DO_NOTHING)
     price = models.IntegerField()
     amount = models.IntegerField()
     time_create = models.DateTimeField(auto_now_add=True)
