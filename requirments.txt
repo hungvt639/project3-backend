@@ -8,3 +8,4 @@ django-cors-headers
 djangorestframework-oauth
 django-oauth-toolkit
 django_rest_passwordreset
+django-cleanup
