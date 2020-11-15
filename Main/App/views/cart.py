@@ -2,8 +2,7 @@ from ..models.cart import Carts
 from ..models.product import Details
 from ..serializer.cart import CartSerializer, CreateCartSerializer, UpdateCartSerializer
 from rest_framework.response import Response
-from rest_framework import status, permissions, parsers, generics
-from django.core.paginator import Paginator
+from rest_framework import status, generics
 from ..utils.check_permission import check_permission
 from Users.models import MyUsers
 
