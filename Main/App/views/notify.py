@@ -93,7 +93,7 @@ class DetailNotifyView(generics.ListCreateAPIView):
             return Response(data, status=status_code)
 
     def delete(self, request, *args, **kwargs):
-        perm = "App.delete_products"
+        perm = "App.delete_notify"
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
