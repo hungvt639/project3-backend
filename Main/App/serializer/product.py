@@ -2,6 +2,13 @@ from rest_framework import serializers
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
 
 
+class TypesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Types
+        fields = ['id', 'type']
+
+
 class AmountsSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -10,11 +17,17 @@ class AmountsSerializer(serializers.ModelSerializer):
 
 
 class DetailsSerialiser(serializers.ModelSerializer):
-    # amounts = AmountsSerializer(many=True, read_only=True)
 
     class Meta:
         model = Details
         fields = ['id', 'product', 'size', 'color', 'price', 'saleprice', 'amount']
+
+    def validate(self, attrs):
+        if attrs.get('saleprice') < 0:
+            raise serializers.ValidationError({'message': 'Giá bán phải lớn hơn hoặc bằng 0'})
+        if attrs.get('amount') <= 0:
+            raise serializers.ValidationError({'message': 'Số lượng phải lớn hơn 0'})
+        return attrs
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -22,6 +35,12 @@ class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = ['id', 'product', 'img']
+
+    def validate(self, attrs):
+        img = attrs.get('img')
+        if img.content_type not in ['image/jpeg', 'image/png',  'image/tiff', 'image/gif']:
+            raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
+        return attrs
 
 
 class DescribeSerializer(serializers.ModelSerializer):
@@ -31,26 +50,38 @@ class DescribeSerializer(serializers.ModelSerializer):
 
 
 class ProductsSerializer(serializers.ModelSerializer):
+    type = TypesSerializer()
     details = DetailsSerialiser(many=True, read_only=True)
     image = ImageSerializer(many=True, read_only=True)
     describe = DescribeSerializer(many=True, read_only=True)
 
     class Meta:
         model = Products
-        fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments', 'details', 'image', 'describe']
+        fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments', 'details', 'image', 'describe', ]
+
+
+class CreateProductsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Products
+        fields = ['id', 'name', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments' ]
+
+    def validate(self, attrs):
+        if attrs.get('sold') < 0:
+            raise serializers.ValidationError({'mesage': 'số lượng đã bán phải lớn hơn hoặc bằng 0'})
+        if attrs.get('from_saleprice') < 0:
+            raise serializers.ValidationError({'mesage': 'Giá bán thấp nhất phải lớn hơn hoặc bằng 0'})
+        if attrs.get('to_saleprice') < 0:
+            raise serializers.ValidationError({'mesage': 'Giá bán cao nhất phải lớn hơn hoặc bằng 0'})
+        if attrs.get('to_saleprice') < attrs.get('from_saleprice'):
+            raise serializers.ValidationError({'mesage': 'Giá bán thấp nhất phải lớn hơn hoặc bằng giá bán cao nhất'})
+        return attrs
 
 
 class AvatarProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Products
         fields = ['id', 'avatar']
-
-
-class TypesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Types
-        fields = ['id', 'type']
 
 
 class UpdateFromPriceProductSerializer(serializers.ModelSerializer):
@@ -63,3 +94,30 @@ class UpdateToPriceProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Products
         fields = ['to_saleprice']
+
+
+class ProductSerializerDetails(serializers.ModelSerializer):
+    type = TypesSerializer()
+
+    class Meta:
+        model = Products
+        fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments' ]
+
+
+class DetailProductSerializer(serializers.ModelSerializer):
+    product = ProductSerializerDetails()
+
+    class Meta:
+        model = Details
+        fields = ['id', 'product', 'size', 'color', 'price', 'saleprice', 'amount']
+
+
+class UpdateAmountDetailProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Details
+        fields = ['amount']
+
+    def validate(self, attrs):
+        if attrs.get('amount') < 0:
+            raise serializers.ValidationError({"message": "Tổng số lượng phải lớn hơn hoặc bằng 0"})
+        return attrs

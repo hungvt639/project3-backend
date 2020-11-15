@@ -1,10 +1,4 @@
 from django.db import models
-from pygments.lexers import get_all_lexers
-from pygments.styles import get_all_styles
-from Users.models import MyUsers
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters.html import HtmlFormatter
-from pygments import highlight
 import uuid
 
 
@@ -21,8 +15,8 @@ class Products(models.Model):
     avatar = models.FileField(upload_to='image/product',blank=True, null=True, default="avatar.jpg")
     sold = models.IntegerField(default=0)
     type = models.ForeignKey(Types, related_name='products', on_delete=models.CASCADE)
-    from_saleprice = models.IntegerField()
-    to_saleprice = models.IntegerField()
+    from_saleprice = models.IntegerField(default=0)
+    to_saleprice = models.IntegerField(default=0)
     comments = models.TextField(max_length=1000, blank=True)
     time_create = models.DateTimeField(auto_now_add=True)
     time_update = models.DateTimeField(auto_now=True)

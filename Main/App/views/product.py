@@ -1,5 +1,6 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
-from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, ImageSerializer, DescribeSerializer
+from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, \
+    ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, CreateProductsSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from django.core.paginator import Paginator
@@ -36,7 +37,7 @@ class Type(generics.ListCreateAPIView):
                     serializer.save()
                     data = serializer.data.copy()
                     response = {
-                        "data":data
+                        "data": data
                     }
                     return Response(response, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -48,7 +49,7 @@ class Type(generics.ListCreateAPIView):
 
 class Product(generics.ListCreateAPIView):
     # serializer_class = ProductsSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
         product = Products.objects.all()
@@ -71,7 +72,7 @@ class Product(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
-                serializer = ProductsSerializer(data=request.data)
+                serializer = CreateProductsSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
@@ -92,7 +93,7 @@ class Detail(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         detail = Details.objects.all()
-        serializer = DetailsSerialiser(detail, many=True)
+        serializer = DetailProductSerializer(detail, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
         pagination = Paginator(serializer.data, limit)
@@ -151,17 +152,25 @@ class Amount(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
+                detail = Details.objects.get(id=request.data['detail'])
+                d_serializer = UpdateAmountDetailProductSerializer(detail, data={'amount': request.data['amount']+detail.amount})
                 serializer = AmountsSerializer(data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    data = serializer.data.copy()
-                    response = {
-                        "data": data
-                    }
-                    return Response(response, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                if d_serializer.is_valid():
+                    if serializer.is_valid():
+                        d_serializer.save()
+                        serializer.save()
+                        data = serializer.data.copy()
+                        response = {
+                            "data": data
+                        }
+                        return Response(response, status=status.HTTP_200_OK)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(d_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e: raise e
+            except Details.DoesNotExist:
+                return Response({"message": "Không có sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)
             except:
-                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+                return Response(status = status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
 
@@ -169,7 +178,7 @@ class Amount(generics.ListCreateAPIView):
 class Images(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = ImageSerializer
-    parser_classes = (parsers.JSONParser, parsers.MultiPartParser, )
+    parser_classes = (parsers.JSONParser, parsers.MultiPartParser,)
 
     def get(self, request, *args, **kwargs):
         image = Image.objects.all()

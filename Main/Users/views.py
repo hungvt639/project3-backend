@@ -65,7 +65,7 @@ class CreateUser(generics.ListCreateAPIView):
                 serializer.save()
                 user = serializer.data.copy()
                 user.pop('password')
-                user_permission(user['id'])
+                user_permission(user['id'], 'user')
                 return Response({"user": user}, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

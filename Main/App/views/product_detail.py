@@ -1,7 +1,7 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
 from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, \
     ImageSerializer, DescribeSerializer, AvatarProductSerializer, UpdateFromPriceProductSerializer, \
-    UpdateToPriceProductSerializer
+    UpdateToPriceProductSerializer, DetailProductSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from ..utils.check_permission import check_permission
@@ -68,7 +68,7 @@ class DetailProductsDetails(generics.ListCreateAPIView):
         try:
             id = kwargs.get('id')
             detail = Details.objects.get(id=id)
-            serializer = DetailsSerialiser(detail)
+            serializer = DetailProductSerializer(detail)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -98,7 +98,6 @@ class DetailProductsDetails(generics.ListCreateAPIView):
                     data = serializer.data.copy()
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
                 raise e
             except Details.DoesNotExist:
                 return Response({"message": "Không có sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)

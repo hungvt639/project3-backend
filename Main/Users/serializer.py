@@ -1,13 +1,23 @@
 from .models import MyUsers
 from rest_framework import serializers
-from App.models.Snippets import Snippet
+from django.contrib.auth.models import Group
+import re
+r = re.compile(r'^\d{0}?(0|9)\d{9}$')
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['name']
 
 
 class UserSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True ,read_only=True)
     birthday = serializers.DateField(format="%d-%m-%Y", input_formats=['%d-%m-%Y', 'iso-8601'], allow_null=True)
+
     class Meta:
         model = MyUsers
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
+        fields = ['id', 'username', 'groups', 'email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
 
 
 class EditAvatar(serializers.ModelSerializer):
@@ -18,13 +28,18 @@ class EditAvatar(serializers.ModelSerializer):
 
 class EditUserSerializer(serializers.ModelSerializer):
     birthday = serializers.DateField(format="%d-%m-%Y", input_formats=['%d-%m-%Y', 'iso-8601'], allow_null=True)
+
     class Meta:
         model = MyUsers
         fields = ['email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
 
+    def validate(self, attrs):
+        if r.search(attrs.get("phone")):
+            serializers.ValidationError({"message": "Số điện thoại không hợp lệ"})
+        return attrs
+
 
 class CreateUserSerializer(serializers.ModelSerializer):
-    # birthday = serializers.DateField(format="%d-%m-%Y", input_formats=['%d-%m-%Y', 'iso-8601'], allow_null=True)
 
     class Meta:
         model = MyUsers
@@ -47,6 +62,3 @@ class CreateUserSerializer(serializers.ModelSerializer):
 class ChangePassworSerializer(serializers.ModelSerializer):
     model = MyUsers
     fields = ['password']
-
-    # def validate(self, attrs):
-    #     import pdb; pdb.set_trace()

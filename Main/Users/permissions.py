@@ -1,18 +1,31 @@
-from rest_framework import permissions
 from .models import MyUsers
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 
 
-def user_permission(id):
+def createGroup():
+    new_group, created = Group.objects.get_or_create(name='admin')
+    perm = Permission.objects.all()
+    new_group.permissions.set(perm)
 
-    user = MyUsers.objects.get(pk=id)
-    permission_list = [
+    new_group, created = Group.objects.get_or_create(name='user')
+    perm = [
         Permission.objects.get(codename='view_myusers'),
+        Permission.objects.get(codename='add_myusers'),
         Permission.objects.get(codename='change_myusers'),
-
-        Permission.objects.get(codename='view_snippet'),
-        Permission.objects.get(codename='change_snippet'),
-        Permission.objects.get(codename='add_snippet'),
-        Permission.objects.get(codename='delete_snippet')
+        Permission.objects.get(codename='delete_myusers'),
+        Permission.objects.get(codename='view_types'),
+        Permission.objects.get(codename='view_products'),
+        Permission.objects.get(codename='view_image'),
+        Permission.objects.get(codename='view_details'),
+        Permission.objects.get(codename='view_describe'),
+        Permission.objects.get(codename='view_carts'),
+        Permission.objects.get(codename='add_carts'),
+        Permission.objects.get(codename='change_carts'),
+        Permission.objects.get(codename='delete_carts'),
     ]
-    user.user_permissions.set(permission_list)
+    new_group.permissions.set(perm)
+
+
+def user_permission(id, perm):
+    user = MyUsers.objects.get(pk=id)
+    user.groups.add(Group.objects.get(name=perm))
