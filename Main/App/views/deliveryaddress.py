@@ -92,9 +92,12 @@ class DetailDeliveryAddressView(generics.ListCreateAPIView):
                 user = MyUsers.objects.get(id=request.user.id)
                 deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
                 deliveryaddress = deliveryaddress.get(id=id)
-                deliveryaddress.on_delete = True
-                deliveryaddress.save()
-                return Response(status=status.HTTP_200_OK)
+                serializer = DeleteDeliveryAddressSerializer(deliveryaddress, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    return Response(data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except DeliveryAddress.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
             except:

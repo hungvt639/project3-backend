@@ -34,7 +34,7 @@ class EditUserSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
 
     def validate(self, attrs):
-        if r.search(attrs.get("phone")):
+        if not r.search(attrs.get("phone")):
             serializers.ValidationError({"message": "Số điện thoại không hợp lệ"})
         return attrs
 

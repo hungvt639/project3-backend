@@ -33,14 +33,14 @@ def createGroup():
         Permission.objects.get(codename='change_notify'),
         Permission.objects.get(codename='delete_notify'),
 
-        Permission.objects.get(codename='view_order'),
-        Permission.objects.get(codename='add_order'),
-        Permission.objects.get(codename='change_order'),
-
         Permission.objects.get(codename='view_deliveryaddress'),
         Permission.objects.get(codename='add_deliveryaddress'),
         Permission.objects.get(codename='change_deliveryaddress'),
         Permission.objects.get(codename='delete_deliveryaddress'),
+
+        Permission.objects.get(codename='view_order'),
+        Permission.objects.get(codename='add_order'),
+        Permission.objects.get(codename='change_order'),
     ]
     new_group.permissions.set(perm)
 

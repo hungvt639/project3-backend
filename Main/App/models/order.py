@@ -1,8 +1,8 @@
 from django.db import models
 from Users.models import MyUsers
 from .product import Details
+from .deliveryaddress import DeliveryAddress
 import uuid
-
 
 ORDER_STATUS = [
     (1, "Đặt hàng"),
@@ -16,7 +16,8 @@ ORDER_STATUS = [
 
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(MyUsers, on_delete=models.CASCADE)
+    user = models.ForeignKey(MyUsers, related_name="user", on_delete=models.CASCADE)
+    delivery_address = models.ForeignKey(DeliveryAddress, related_name="delivery_address", on_delete=models.CASCADE)
     price = models.IntegerField()
     status = models.IntegerField(choices=ORDER_STATUS, default=1)
     time_create = models.DateTimeField(auto_now_add=True)
