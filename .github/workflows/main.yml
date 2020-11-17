@@ -17,15 +17,15 @@ jobs:
         repository: sevolloves/project3
         tags: project3  
       
-#     - name: Connect VPS
-#       uses: appleboy/ssh-action@master
-#       with:
-#         host: ${{ secrets.HOST }}
-#         username: ${{ secrets.USERNAME }}
-#         password: ${{ secrets.PASSWORD }}
+    - name: Connect VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
 #         port: ${{ secrets.PORT }}
 #         target: ${{secrets.PROJECT_PATH}} 
-#         script: |
-#           cd dockerhub/
-#           sudo docker pull sevolloves/test1:test1
-#           sudo docker-compose up -d django-web
+        script: |
+          cd project3/
+          docker push sevolloves/project3:tagname
+          docker-compose up -d django-web
