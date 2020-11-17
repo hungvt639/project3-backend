@@ -20,7 +20,7 @@ services:
 
 
   django-web:
-    image: sevolloves/project3
+    image: sevolloves/project3:project3
     restart: always
 #    build:
 #      context: .
