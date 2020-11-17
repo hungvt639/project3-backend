@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "rootpassword"
-      MYSQL_DATABASE: "bh"
+      MYSQL_DATABASE: "project3-backend"
       MYSQL_USER: "roots"
       MYSQL_PASSWORD: "roots"
 #    networks:
