@@ -49,9 +49,11 @@ class CartView(generics.ListCreateAPIView):
                     if serializer.is_valid():
                         serializer.save()
                         data = serializer.data.copy()
+                        data = Carts.objects.get(id=data['id'])
+                        serializer = CartSerializer(data)
                         res = {
                             "message": "Thêm vào giỏ hàng thành công",
-                            "data": data
+                            "data": serializer.data
                         }
                         return Response(res, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

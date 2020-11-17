@@ -1,0 +1,37 @@
+version: '2'
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "rootpassword"
+      MYSQL_DATABASE: "bh"
+      MYSQL_USER: "roots"
+      MYSQL_PASSWORD: "roots"
+#    networks:
+#      - base
+    network_mode: "host"
+    ports:
+      - "3306:3306"
+    volumes:
+#      - /home/hung/data/:/var/lib/mysql/
+      - mariadb-data:/var/lib/mysql/
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=utf8_general_ci
+
+
+  django-web:
+    image: sevolloves/project3
+    restart: always
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    networks:
+#      - base
+    network_mode: "host"
+    ports:
+      - "8000:8000"
+#networks:
+#  base:
+
+volumes:
+  mariadb-data:

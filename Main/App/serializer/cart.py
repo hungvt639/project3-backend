@@ -15,7 +15,7 @@ class CreateCartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Carts
-        fields = ['product_detail', 'amount', 'user']
+        fields = ['id', 'product_detail', 'amount', 'user']
 
     def validate(self, attrs):
         if attrs.get('amount') <= 0:
@@ -24,10 +24,12 @@ class CreateCartSerializer(serializers.ModelSerializer):
 
 
 class UpdateCartSerializer(serializers.ModelSerializer):
+    product_detail = DetailProductSerializer(read_only=True,)
 
     class Meta:
         model = Carts
-        fields = ['amount']
+        fields = ['id', 'product_detail', 'amount', 'time_create', 'time_update']
+        read_only_fields = ['id', 'product_detail', 'time_create', 'time_update']
 
     def validate(self, attrs):
         if attrs.get('amount') <= 0:
