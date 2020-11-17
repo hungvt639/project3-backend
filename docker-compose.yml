@@ -27,6 +27,8 @@ services:
 #      dockerfile: Dockerfile
 #    networks:
 #      - base
+    volumes:
+      - /home/hung/project3/media/:/Main/media/
     network_mode: "host"
     ports:
       - "8000:8000"
