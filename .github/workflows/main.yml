@@ -27,5 +27,5 @@ jobs:
 #         target: ${{secrets.PROJECT_PATH}} 
         script: |
           cd project3/
-          docker pull sevolloves/project3:project3
-          docker-compose up -d django-web
+          sudo docker pull sevolloves/project3:project3
+          sudo docker-compose up -d django-web
