@@ -1,6 +1,6 @@
 FROM python:3.6.9
 WORKDIR /app
-ADD requirements.txt /app/requirements.txt
+ADD requirments.txt /app/requirments.txt
 RUN pip install --upgrade pip && pip install -r requirments.txt
 EXPOSE 8000
 COPY . /app
