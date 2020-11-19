@@ -201,3 +201,4 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+ALLOWED_HOSTS = ['*']
