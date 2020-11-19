@@ -33,8 +33,11 @@ class CartView(generics.ListCreateAPIView):
                 detail = Details.objects.get(id=request.data['product_detail'])
                 carts = Carts.objects.filter(user=user, product_detail=detail).first()
                 if carts:
-                    if not "update" in request.data:
-                        request.data['amount'] = request.data['amount'] + carts.amount
+                    request.data['amount'] = request.data['amount'] + carts.amount
+                    if carts.product_detail.amount < request.data['amount']:
+                        return Response(
+                            {'message': ['Số lượng sản phẩm trong giỏ không được lớn hơn số lượng hàng trong kho']},
+                            status=status.HTTP_400_BAD_REQUEST)
                     serializer = UpdateCartSerializer(carts, data=request.data)
                     if serializer.is_valid():
                         serializer.save()
@@ -76,6 +79,10 @@ class DetailCartView(generics.ListCreateAPIView):
                 user = MyUsers.objects.get(id=request.user.id)
                 carts = Carts.objects.filter(user=user)
                 cart = carts.get(id=id)
+                if cart.product_detail.amount < request.data['amount']:
+                    return Response(
+                        {'message': 'Số lượng sản phẩm trong giỏ không được lớn hơn số lượng hàng trong kho'},
+                        status=status.HTTP_400_BAD_REQUEST)
                 serializer = UpdateCartSerializer(cart, data=request.data)
                 if serializer.is_valid():
                     serializer.save()

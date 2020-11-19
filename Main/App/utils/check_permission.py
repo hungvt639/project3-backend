@@ -2,7 +2,7 @@ from rest_framework import status
 
 
 NOT_PERMISSION = {
-    "message": "Bạn không có quyền truy cập chức năng này"
+    "message": ["Bạn không có quyền truy cập chức năng này"]
 }
 
 

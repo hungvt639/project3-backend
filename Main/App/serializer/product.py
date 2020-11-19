@@ -83,6 +83,13 @@ class AvatarProductSerializer(serializers.ModelSerializer):
         model = Products
         fields = ['id', 'avatar']
 
+    def validate(self, attrs):
+        img = attrs.get('avatar')
+        # import pdb; pdb.set_trace()
+        if img.content_type not in ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']:
+            raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
+        return attrs
+
 
 class UpdateFromPriceProductSerializer(serializers.ModelSerializer):
     class Meta:
