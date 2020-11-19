@@ -131,7 +131,7 @@ DATABASES = {
         'NAME': 'project3-backend',
         'USER': 'hung',
         'PASSWORD': 'Hung12345',
-        'HOST': '52.148.71.71',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
