@@ -15,7 +15,7 @@ ORDER_STATUS = [
 
 
 class Order(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, unique=True, editable=False)
     user = models.ForeignKey(MyUsers, related_name="user", on_delete=models.CASCADE)
     delivery_address = models.ForeignKey(DeliveryAddress, related_name="delivery_address", on_delete=models.CASCADE)
     price = models.IntegerField()

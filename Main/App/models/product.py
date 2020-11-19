@@ -10,7 +10,7 @@ class Types(models.Model):
 
 
 class Products(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=200)
     avatar = models.FileField(upload_to='image/product',blank=True, null=True, default="avatar.jpg")
     sold = models.IntegerField(default=0)
