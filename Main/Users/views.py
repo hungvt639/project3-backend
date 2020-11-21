@@ -30,7 +30,7 @@ class Profile(generics.ListCreateAPIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
-            respone = {"message": "Error"}
+            respone = {"message": ["Error"]}
             return Response(respone, status=status.HTTP_400_BAD_REQUEST)
 
 

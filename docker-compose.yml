@@ -37,7 +37,7 @@ services:
     image: sevolloves/project3:project3
     restart: always
     volumes:
-      - /home/hung/project3/media/:/app/Main/same-path-as-MEDIA_URL
+      - /home/hung/project3/media/:/app/Main/media/
     network_mode: "host"
     ports:
       - "8000:8000"

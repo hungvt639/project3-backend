@@ -81,7 +81,7 @@ class DetailCartView(generics.ListCreateAPIView):
                 cart = carts.get(id=id)
                 if cart.product_detail.amount < request.data['amount']:
                     return Response(
-                        {'message': 'Số lượng sản phẩm trong giỏ không được lớn hơn số lượng hàng trong kho'},
+                        {'message': ['Số lượng sản phẩm trong giỏ không được lớn hơn số lượng hàng trong kho']},
                         status=status.HTTP_400_BAD_REQUEST)
                 serializer = UpdateCartSerializer(cart, data=request.data)
                 if serializer.is_valid():
@@ -94,7 +94,7 @@ class DetailCartView(generics.ListCreateAPIView):
                     return Response(res, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Carts.DoesNotExist:
-                return Response({"message": "Không sản phẩn này trong giỏ hàng"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không sản phẩn này trong giỏ hàng"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -109,10 +109,10 @@ class DetailCartView(generics.ListCreateAPIView):
                 user = MyUsers.objects.get(id=request.user.id)
                 carts = Carts.objects.filter(user=user)
                 carts.get(id=id).delete()
-                return Response(status=status.HTTP_200_OK)
+                return Response({'message': 'Xóa sản phẩm khỏi giỏ hàng thành công'}, status=status.HTTP_200_OK)
             except Carts.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response({'message': ['Không có sản phẩm này trong giỏ của bạn']}, status=status.HTTP_404_NOT_FOUND)
             except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': ['đã có lỗi sảy ra, bạn vui lòng thử lại sau']}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)

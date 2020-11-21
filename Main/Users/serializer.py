@@ -12,12 +12,12 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    groups = GroupSerializer(many=True ,read_only=True)
+    groups = GroupSerializer(many=True, read_only=True)
     birthday = serializers.DateField(format="%d-%m-%Y", input_formats=['%d-%m-%Y', 'iso-8601'], allow_null=True)
 
     class Meta:
         model = MyUsers
-        fields = ['id', 'username', 'groups', 'email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
+        fields = ['id', 'groups', 'email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
 
 
 class EditAvatar(serializers.ModelSerializer):
@@ -27,15 +27,16 @@ class EditAvatar(serializers.ModelSerializer):
 
 
 class EditUserSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True, read_only=True)
     birthday = serializers.DateField(format="%d-%m-%Y", input_formats=['%d-%m-%Y', 'iso-8601'], allow_null=True)
 
     class Meta:
         model = MyUsers
-        fields = ['email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar']
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'sex', 'address', 'birthday', 'avatar', 'groups']
 
     def validate(self, attrs):
         if not r.search(attrs.get("phone")):
-            serializers.ValidationError({"message": "Số điện thoại không hợp lệ"})
+            raise serializers.ValidationError({"message": ["Số điện thoại không hợp lệ"]})
         return attrs
 
 
