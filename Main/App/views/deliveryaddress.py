@@ -13,7 +13,7 @@ class DeliveryAddressView(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             user = MyUsers.objects.get(id=request.user.id)
-            deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
+            deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False).order_by('-default')
             serializer = DeliveryAddressSerializer(deliveryaddress, many=True)
             response = {
                 "data": serializer.data,
@@ -31,10 +31,11 @@ class DeliveryAddressView(generics.ListCreateAPIView):
                 serializer = DeliveryAddressSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    data = serializer.data.copy()
-                    data.pop('user')
+                    user = MyUsers.objects.get(id=request.user.id)
+                    deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
+                    serializer = DeliveryAddressSerializer(deliveryaddress.order_by('-default'), many=True)
                     response = {
-                        "data": data
+                        "data": serializer.data
                     }
                     return Response(response, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

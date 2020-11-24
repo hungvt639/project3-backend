@@ -53,6 +53,10 @@ class Product(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         product = Products.objects.all()
+        type = int(request.GET.get('type', 0))
+        type = Types.objects.filter(id=type)
+        if type:
+            product = product.filter(type=type.first())
         serializer = ProductsSerializer(product, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
@@ -166,7 +170,6 @@ class Amount(generics.ListCreateAPIView):
                         return Response(response, status=status.HTTP_200_OK)
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 return Response(d_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e: raise e
             except Details.DoesNotExist:
                 return Response({"message": "Không có sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)
             except:

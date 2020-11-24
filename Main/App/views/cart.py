@@ -14,7 +14,7 @@ class CartView(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             user = MyUsers.objects.get(id=request.user.id)
-            cart = Carts.objects.filter(user=user)
+            cart = Carts.objects.filter(user=user).order_by('-time_update')
             serializer = CartSerializer(cart, many=True)
             res = {
                 "data": serializer.data
@@ -41,19 +41,19 @@ class CartView(generics.ListCreateAPIView):
                     serializer = UpdateCartSerializer(carts, data=request.data)
                     if serializer.is_valid():
                         serializer.save()
-                        data = serializer.data.copy()
+                        cart = Carts.objects.filter(user=user).order_by('-time_update')
+                        serializer = CartSerializer(cart, many=True)
                         res = {
                             "message": "Cập nhật số lượng thành công",
-                            "data": data
+                            "data": serializer.data
                         }
                         return Response(res, status=status.HTTP_200_OK)
                 else:
                     serializer = CreateCartSerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save()
-                        data = serializer.data.copy()
-                        data = Carts.objects.get(id=data['id'])
-                        serializer = CartSerializer(data)
+                        cart = Carts.objects.filter(user=user).order_by('-time_update')
+                        serializer = CartSerializer(cart, many=True)
                         res = {
                             "message": "Thêm vào giỏ hàng thành công",
                             "data": serializer.data
@@ -66,6 +66,28 @@ class CartView(generics.ListCreateAPIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status=status_code)
+
+    def put(self, request, *args, **kwargs):
+        perm = "App.delete_carts"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                ids = request.data.get('ids')
+                user = MyUsers.objects.get(id=request.user.id)
+                carts = Carts.objects.filter(user=user)
+                carts.filter(id__in=ids).delete()
+                serializer = CartSerializer(carts.order_by('-time_update'), many=True)
+                res = {
+                    "message": 'Xóa sản phẩm khỏi giỏ hàng thành công',
+                    "data": serializer.data
+                }
+                return Response(res, status=status.HTTP_200_OK)
+            except Exception as e: raise e
+            except:
+                return Response({'message': ['đã có lỗi sảy ra, bạn vui lòng thử lại sau']},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status_code)
 
 
 class DetailCartView(generics.ListCreateAPIView):

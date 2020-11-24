@@ -15,6 +15,24 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"message": "Số điện thoại không hợp lệ"})
         return attrs
 
+    def create(self, validated_data):
+        add = DeliveryAddress.objects.create(
+            user=validated_data.get('user'),
+            phone=validated_data.get('phone'),
+            address=validated_data.get('address'),
+            default=validated_data.get('default')
+        )
+        address = DeliveryAddress.objects.filter(user=validated_data.get('user'), default=True)
+        if address:
+            if validated_data.get('default'):
+                for addr in address:
+                    addr.default = False
+                    addr.save()
+        else:
+            add.default = True
+        add.save()
+        return add
+
 
 class UpdateDeliveryAddressSerializer(serializers.ModelSerializer):
     class Meta:
