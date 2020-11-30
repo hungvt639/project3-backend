@@ -1,6 +1,6 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
 from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, \
-    ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, CreateProductsSerializer
+    ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, CreateProductsSerializer, DescriptionSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from django.core.paginator import Paginator

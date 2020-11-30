@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models.product import Types, Products, Details, Amounts, Image, Describe
+from ..models.product import Types, Products, Details, Amounts, Image, Describe, Description
 
 
 class TypesSerializer(serializers.ModelSerializer):
@@ -49,15 +49,28 @@ class DescribeSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'header', 'context']
 
 
+class DescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Description
+        fields = ['id', 'product', 'text', 'img']
+
+    def validate(self, attrs):
+        img = attrs.get('img')
+        if img.content_type not in ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']:
+            raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
+        return attrs
+
+
 class ProductsSerializer(serializers.ModelSerializer):
     type = TypesSerializer()
     details = DetailsSerialiser(many=True, read_only=True)
     image = ImageSerializer(many=True, read_only=True)
     describe = DescribeSerializer(many=True, read_only=True)
+    description = DescriptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Products
-        fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments', 'details', 'image', 'describe', ]
+        fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments', 'details', 'image', 'describe', 'description']
 
 
 class CreateProductsSerializer(serializers.ModelSerializer):

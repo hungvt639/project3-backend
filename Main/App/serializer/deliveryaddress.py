@@ -8,7 +8,7 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeliveryAddress
-        fields = ['id', 'user', 'phone', 'address', 'default']
+        fields = ['id', 'user', 'fullname', 'phone', 'address', 'default']
 
     def validate(self, attrs):
         if not r.search(attrs.get("phone")):

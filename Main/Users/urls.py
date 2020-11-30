@@ -13,7 +13,3 @@ urlpatterns = [
     path('logout/', views.Logout.as_view()),
     path('change-avatar/', views.Avatar.as_view())
 ]
-try:
-    createGroup()
-except:
-    pass

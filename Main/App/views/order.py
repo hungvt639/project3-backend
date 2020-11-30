@@ -15,7 +15,7 @@ class OrderView(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             user = MyUsers.objects.get(id=request.user.id)
-            order = Order.objects.filter(user=user)
+            order = Order.objects.filter(user=user).order_by('-time_update')
             serializer = OrderSerializer(order, many=True)
             page = int(request.GET.get('page', 1))
             limit = int(request.GET.get('limit', 20))

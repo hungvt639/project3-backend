@@ -62,3 +62,12 @@ class Describe(models.Model):
 
     def __str__(self):
         return str(self.product) + ": " + self.header
+
+
+class Description(models.Model):
+    product = models.ForeignKey(Products, related_name='description', on_delete=models.CASCADE)
+    text = models.CharField(max_length=1000, null=True, blank=True)
+    img = models.FileField(upload_to='image/description/', null=True, blank=True)
+
+    def __str__(self):
+        return str(self.product)+ " - " + self.text

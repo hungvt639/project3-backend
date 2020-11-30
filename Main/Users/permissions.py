@@ -24,6 +24,8 @@ def createGroup():
 
         Permission.objects.get(codename='view_describe'),
 
+        Permission.objects.get(codename='view_description'),
+
         Permission.objects.get(codename='view_carts'),
         Permission.objects.get(codename='add_carts'),
         Permission.objects.get(codename='change_carts'),
