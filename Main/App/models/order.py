@@ -8,7 +8,7 @@ ORDER_STATUS = [
     (1, "Chờ xác nhận"),
     (2, "Chờ lấy hàng"),
     (3, "Đang giao"),
-    (4, "Đã giao"),
+    (4, "Đã nhận"),
     (5, "Đã hủy"),
     (6, "Đã xóa")
 ]
