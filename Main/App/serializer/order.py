@@ -4,34 +4,43 @@ from ..utils.function import get_price_order_product
 from .deliveryaddress import DeliveryAddressSerializer
 from ..models.deliveryaddress import DeliveryAddress
 from ..models.cart import Carts
+from .product import DetailProductSerializer
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
+    product_detail = DetailProductSerializer()
 
     class Meta:
         model = OrderProduct
-        fields = ['id', 'detail_product', 'amount']
-
-    def validate(self, attrs):
-        if attrs.get('amount') <= 0:
-            raise serializers.ValidationError({"message": "Số lượng sản phẩm phải lớn hơn 0"})
-        return attrs
+        fields = ['id', 'product_detail', 'amount']
 
 
 class OrderSerializer(serializers.ModelSerializer):
     time_create = serializers.DateTimeField(format='%H:%M:%S %d-%m-%Y', read_only=True)
     time_update = serializers.DateTimeField(format='%H:%M:%S %d-%m-%Y', read_only=True)
-    product = OrderProductSerializer(many=True)
+    product = OrderProductSerializer(many=True, read_only=True)
     delivery_address = DeliveryAddressSerializer(read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'price', 'status', 'time_create', 'message','time_update', 'product', 'delivery_address']
+        fields = ['id', 'user', 'price', 'status', 'time_create', 'message', 'time_update', 'product', 'delivery_address']
         read_only_fields = ['price', 'status', 'time_create', 'time_update']
 
 
+class CreateOrderProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = OrderProduct
+        fields = ['id', 'product_detail', 'amount']
+
+    def validate(self, attrs):
+        if attrs.get('amount') <= 0:
+            raise serializers.ValidationError({"message": ["Số lượng sản phẩm phải lớn hơn 0"]})
+        return attrs
+
+
 class CreateOrderSerializer(serializers.ModelSerializer):
-    product = OrderProductSerializer(many=True)
+    product = CreateOrderProductSerializer(many=True)
 
     class Meta:
         model = Order
@@ -50,10 +59,10 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         for product in products:
             order_product = OrderProduct.objects.create(
                 order=order,
-                detail_product=product.get('detail_product'),
+                product_detail=product.get('product_detail'),
                 amount=product.get('amount')
             )
-            product_detail = product.get('detail_product')
+            product_detail = product.get('product_detail')
             user = validated_data.get('user')
             Carts.objects.filter(user=user, product_detail=product_detail).delete()
             product_detail.amount = product_detail.amount - product.get('amount')
@@ -70,8 +79,8 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'message': ['Không có sản phẩm nào trong đơn hàng']})
         products = attrs.get('product')
         for product in products:
-            if product.get("amount") > product.get('detail_product').amount:
-                raise serializers.ValidationError({'message': ["Số lượng sản phẩm ({}) lớn hơn số hàng có sẵn trong kho".format(str(product.get("detail_product")))]})
+            if product.get("amount") > product.get('product_detail').amount:
+                raise serializers.ValidationError({'message': ["Số lượng sản phẩm ({}) lớn hơn số hàng có sẵn trong kho".format(str(product.get("product_detail")))]})
         return attrs
 
 
@@ -87,11 +96,27 @@ class UpdateOrderManageSerializer(serializers.ModelSerializer):
 
 
 class UpdateOrderUserSerializer(serializers.ModelSerializer):
+    time_create = serializers.DateTimeField(format='%H:%M:%S %d-%m-%Y', read_only=True)
+    time_update = serializers.DateTimeField(format='%H:%M:%S %d-%m-%Y', read_only=True)
+    product = OrderProductSerializer(many=True, read_only=True)
+    delivery_address = DeliveryAddressSerializer(read_only=True)
+
     class Meta:
         model = Order
-        fields = ['status']
+        fields = ['id', 'user', 'price', 'status', 'time_create', 'message', 'time_update', 'product', 'delivery_address']
+        read_only_fields = ['id', 'user', 'price', 'time_create', 'message', 'time_update', 'product', 'delivery_address']
 
     def validate(self, attrs):
         if attrs.get('status') < 5:
-            raise serializers.ValidationError({'message': 'Bạn không thể chuyển đơn hàng về trạng thái này'})
+            raise serializers.ValidationError({'message': ['Bạn không thể chuyển đơn hàng về trạng thái này']})
         return attrs
+
+    def update(self, instance, validated_data):
+        instance.status = validated_data.get('status')
+        products = OrderProduct.objects.filter(order=instance)
+        for product in products:
+            p = product.product_detail
+            p.amount = p.amount + product.amount
+            p.save()
+        instance.save()
+        return instance

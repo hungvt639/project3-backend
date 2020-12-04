@@ -27,7 +27,7 @@ class Products(models.Model):
 
 class Details(models.Model):
     product = models.ForeignKey(Products, related_name="details", on_delete=models.CASCADE)
-    size = models.CharField(max_length=3)
+    size = models.CharField(max_length=10)
     color = models.CharField(max_length=20)
     price = models.IntegerField()
     saleprice = models.IntegerField()
@@ -57,16 +57,16 @@ class Image(models.Model):
 
 class Describe(models.Model):
     product = models.ForeignKey(Products, related_name="describe", on_delete=models.CASCADE)
-    header = models.CharField(max_length=100)
+    # header = models.CharField(max_length=100)
     context = models.CharField(max_length=200)
 
     def __str__(self):
-        return str(self.product) + ": " + self.header
+        return str(self.product) + ": " + self.context
 
 
 class Description(models.Model):
     product = models.ForeignKey(Products, related_name='description', on_delete=models.CASCADE)
-    text = models.CharField(max_length=1000, null=True, blank=True)
+    text = models.TextField(max_length=1000, null=True, blank=True)
     img = models.FileField(upload_to='image/description/', null=True, blank=True)
 
     def __str__(self):

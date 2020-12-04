@@ -13,7 +13,10 @@ class DeliveryAddressView(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             user = MyUsers.objects.get(id=request.user.id)
-            deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False).order_by('-default')
+            order_by = request.GET.get("order-by", 0)
+            deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
+            if order_by:
+                deliveryaddress = deliveryaddress.order_by('-default')
             serializer = DeliveryAddressSerializer(deliveryaddress, many=True)
             response = {
                 "data": serializer.data,
@@ -26,6 +29,7 @@ class DeliveryAddressView(generics.ListCreateAPIView):
         perm = "App.add_deliveryaddress"
         validate, data, status_code = check_permission(request, perm)
         if validate:
+            # import pdb; pdb.set_trace()
             try:
                 request.data['user'] = request.user.id
                 serializer = DeliveryAddressSerializer(data=request.data)
@@ -33,12 +37,13 @@ class DeliveryAddressView(generics.ListCreateAPIView):
                     serializer.save()
                     user = MyUsers.objects.get(id=request.user.id)
                     deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
-                    serializer = DeliveryAddressSerializer(deliveryaddress.order_by('-default'), many=True)
+                    serializer = DeliveryAddressSerializer(deliveryaddress, many=True)
                     response = {
                         "data": serializer.data
                     }
                     return Response(response, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e: raise e
             except:
                 return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
@@ -74,11 +79,12 @@ class DetailDeliveryAddressView(generics.ListCreateAPIView):
                 serializer = UpdateDeliveryAddressSerializer(deliveryaddress, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    data = serializer.data.copy()
-                    return Response(data, status=status.HTTP_200_OK)
+                    deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
+                    serializer = DeliveryAddressSerializer(deliveryaddress, many=True)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except DeliveryAddress.DoesNotExist:
-                return Response({"message": "Không có địa chỉ này"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có địa chỉ này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -96,8 +102,9 @@ class DetailDeliveryAddressView(generics.ListCreateAPIView):
                 serializer = DeleteDeliveryAddressSerializer(deliveryaddress, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    data = serializer.data.copy()
-                    return Response(data, status=status.HTTP_200_OK)
+                    deliveryaddress = DeliveryAddress.objects.filter(user=user, on_delete=False)
+                    serializers = DeliveryAddressSerializer(deliveryaddress, many=True)
+                    return Response(serializers.data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except DeliveryAddress.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)

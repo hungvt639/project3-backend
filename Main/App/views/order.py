@@ -87,12 +87,12 @@ class DetailOrderView(generics.ListCreateAPIView):
                 order = Order.objects.filter(user=user)
                 order = order.get(id=id)
                 if order.status >= 5:
-                    return Response({'message': 'Không thể thay đổi trạng thái đơn hàng đã hủy'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'message': ['Không thể thay đổi trạng thái đơn hàng đã hủy']}, status=status.HTTP_400_BAD_REQUEST)
                 if user.groups.filter(name='admin').exists():
                     serializer = UpdateOrderManageSerializer(order, data=request.data)
                 else:
                     if order.status > 1:
-                        return Response({'message': 'Không thể hủy trạng thái đơn hàng khi đã chốt đơn'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({'message': ['Không thể hủy trạng thái đơn hàng khi đã chốt đơn']}, status=status.HTTP_400_BAD_REQUEST)
                     serializer = UpdateOrderUserSerializer(order, data=request.data)
                 if serializer.is_valid():
                     serializer.save()

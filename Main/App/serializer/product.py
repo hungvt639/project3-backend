@@ -46,7 +46,7 @@ class ImageSerializer(serializers.ModelSerializer):
 class DescribeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Describe
-        fields = ['id', 'product', 'header', 'context']
+        fields = ['id', 'product', 'context']
 
 
 class DescriptionSerializer(serializers.ModelSerializer):

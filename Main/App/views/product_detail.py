@@ -18,7 +18,14 @@ class DetailProducts(generics.ListCreateAPIView):
             id = kwargs.get('id')
             product = Products.objects.get(id=id)
             serializer = ProductsSerializer(product)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            same_product = Products.objects.filter(type=product.type).exclude(id=id)[0:4]
+            # import pdb; pdb.set_trace()
+            serializer_same = ProductsSerializer(same_product, many=True)
+            res = {
+                "product": serializer.data,
+                "same_product": serializer_same.data
+            }
+            return Response(res, status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

@@ -11,13 +11,15 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'fullname', 'phone', 'address', 'default']
 
     def validate(self, attrs):
+        # print(attrs)
         if not r.search(attrs.get("phone")):
-            raise serializers.ValidationError({"message": "Số điện thoại không hợp lệ"})
+            raise serializers.ValidationError({"message": ["Số điện thoại không hợp lệ"]})
         return attrs
 
     def create(self, validated_data):
         add = DeliveryAddress.objects.create(
             user=validated_data.get('user'),
+            fullname=validated_data.get('fullname'),
             phone=validated_data.get('phone'),
             address=validated_data.get('address'),
             default=validated_data.get('default')
@@ -37,16 +39,26 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
 class UpdateDeliveryAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryAddress
-        fields = ['default']
+        fields = ['fullname', 'phone', 'address', 'default']
 
     def update(self, instance, validated_data):
-        dellivery_address = DeliveryAddress.objects.filter(user=instance.user, on_delete=False)
-        for del_add in dellivery_address:
-            del_add.default = False
-            del_add.save()
-        instance.default = True
+        if validated_data.get("default"):
+            dellivery_address = DeliveryAddress.objects.filter(user=instance.user, on_delete=False)
+            for del_add in dellivery_address:
+                del_add.default = False
+                del_add.save()
+        instance.default = validated_data.get('default')
+        instance.fullname = validated_data.get('fullname')
+        instance.phone = validated_data.get('phone')
+        instance.address = validated_data.get('address')
         instance.save()
         return instance
+
+    def validate(self, attrs):
+        # print(attrs)
+        if not r.search(attrs.get("phone")):
+            raise serializers.ValidationError({"message": ["Số điện thoại không hợp lệ"]})
+        return attrs
 
 
 class DeleteDeliveryAddressSerializer(serializers.ModelSerializer):

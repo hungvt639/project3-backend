@@ -5,6 +5,7 @@ from .deliveryaddress import DeliveryAddress
 import uuid
 
 ORDER_STATUS = [
+    (0, "Đặt đơn"),
     (1, "Chờ xác nhận"),
     (2, "Chờ lấy hàng"),
     (3, "Đang giao"),
@@ -30,5 +31,5 @@ class Order(models.Model):
 
 class OrderProduct(models.Model):
     order = models.ForeignKey(Order, related_name="product", on_delete=models.CASCADE)
-    detail_product = models.ForeignKey(Details, on_delete=models.CASCADE)
+    product_detail = models.ForeignKey(Details, related_name="product_detail", on_delete=models.CASCADE)
     amount = models.IntegerField()
