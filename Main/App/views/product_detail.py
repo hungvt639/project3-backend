@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from ..utils.check_permission import check_permission
 from ..utils.function import get_min_price
-import os
+from django.core.paginator import Paginator
+from .product import Type
 
 
 class DetailProducts(generics.ListCreateAPIView):
@@ -155,7 +156,7 @@ class DetailTypes(generics.ListCreateAPIView):
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Types.DoesNotExist:
-                return Response({"message": "Không có loại sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có loại sản phẩm này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -167,8 +168,23 @@ class DetailTypes(generics.ListCreateAPIView):
         if validate:
             try:
                 id = kwargs.get("id")
-                Types.objects.get(id=id).delete()
-                return Response(status=status.HTTP_200_OK)
+                type = Types.objects.get(id=id)
+                type.on_delete = True
+                type.save()
+                type = Types.objects.filter(on_delete=False)
+                serializer = TypesSerializer(type, many=True)
+                page = int(request.GET.get('page', 1))
+                limit = int(request.GET.get('limit', 20))
+                pagination = Paginator(serializer.data, limit)
+                result = pagination.get_page(page)
+                response = {
+                    "total": type.count(),
+                    "data": result.object_list,
+                    "page": result.number,
+                    "has_next": result.has_next(),
+                    "has_prev": result.has_previous()
+                }
+                return Response(response, status=status.HTTP_200_OK)
             except Types.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
             except:

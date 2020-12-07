@@ -3,7 +3,7 @@ from .views import product, product_detail, cart, notify, order, deliveryaddress
 
 
 urlpatterns = [
-    path('product/type/', product.Type.as_view()),
+    path('product/type/', product.Type.as_view(), name="type"),
     path('product/type/<int:id>/', product_detail.DetailTypes.as_view()),
     path('product/product/', product.Product.as_view()),
     path('product/product/<uuid:id>/', product_detail.DetailProducts.as_view()),

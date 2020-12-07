@@ -12,7 +12,7 @@ class Type(generics.ListCreateAPIView):
     serializer_class = TypesSerializer
 
     def get(self, request, *args, **kwargs):
-        type = Types.objects.all()
+        type = Types.objects.filter(on_delete=False)
         serializer = TypesSerializer(type, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
@@ -35,9 +35,18 @@ class Type(generics.ListCreateAPIView):
                 serializer = TypesSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    data = serializer.data.copy()
+                    type = Types.objects.filter(on_delete=False)
+                    serializer = TypesSerializer(type, many=True)
+                    page = int(request.GET.get('page', 1))
+                    limit = int(request.GET.get('limit', 20))
+                    pagination = Paginator(serializer.data, limit)
+                    result = pagination.get_page(page)
                     response = {
-                        "data": data
+                        "total": type.count(),
+                        "data": result.object_list,
+                        "page": result.number,
+                        "has_next": result.has_next(),
+                        "has_prev": result.has_previous()
                     }
                     return Response(response, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -52,7 +61,8 @@ class Product(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
-        product = Products.objects.all()
+        type = Types.objects.filter(on_delete=False)
+        product = Products.objects.filter(type__in=type)
         type = int(request.GET.get('type', 0))
         type = Types.objects.filter(id=type)
         if type:

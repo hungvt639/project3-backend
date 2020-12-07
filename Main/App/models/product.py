@@ -4,6 +4,7 @@ import uuid
 
 class Types(models.Model):
     type = models.CharField(max_length=100)
+    on_delete = models.BooleanField(default=False)
 
     def __str__(self):
         return self.type
