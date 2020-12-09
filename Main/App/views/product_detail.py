@@ -47,7 +47,7 @@ class DetailProducts(generics.ListCreateAPIView):
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Products.DoesNotExist:
-                return Response({"message": "Không có sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có sản phẩm này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -59,12 +59,14 @@ class DetailProducts(generics.ListCreateAPIView):
         if validate:
             try:
                 id = kwargs.get("id")
-                Products.objects.get(id=id).delete()
+                product = Products.objects.get(id=id)
+                product.on_delete = True
+                product.save()
                 return Response(status=status.HTTP_200_OK)
             except Products.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có sản phẩm này."]}, status=status.HTTP_404_NOT_FOUND)
             except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": ["Đã có lỗi sảy ra, bạn vui lòng thử lại sau."]}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
 
@@ -106,9 +108,8 @@ class DetailProductsDetails(generics.ListCreateAPIView):
                     data = serializer.data.copy()
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                raise e
             except Details.DoesNotExist:
-                return Response({"message": "Không có sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có sản phẩm này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:

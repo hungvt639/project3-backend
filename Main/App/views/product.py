@@ -1,5 +1,5 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
-from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, \
+from ..serializer.product import TypesSerializer, ProductsLítSerializer, DetailsSerialiser, AmountsSerializer, \
     ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, CreateProductsSerializer, DescriptionSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
@@ -62,12 +62,12 @@ class Product(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         type = Types.objects.filter(on_delete=False)
-        product = Products.objects.filter(type__in=type)
+        product = Products.objects.filter(type__in=type, on_delete=False)
         type = int(request.GET.get('type', 0))
         type = Types.objects.filter(id=type)
         if type:
             product = product.filter(type=type.first())
-        serializer = ProductsSerializer(product, many=True)
+        serializer = ProductsLítSerializer(product, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
         pagination = Paginator(serializer.data, limit)

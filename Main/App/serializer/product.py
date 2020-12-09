@@ -61,6 +61,19 @@ class DescriptionSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class ProductsLítSerializer(serializers.ModelSerializer):
+    type = TypesSerializer()
+    # details = DetailsSerialiser(many=True, read_only=True)
+    # image = ImageSerializer(many=True, read_only=True)
+    # describe = DescribeSerializer(many=True, read_only=True)
+    # description = DescriptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Products
+        fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments']
+        # fields = ['id', 'name', 'avatar', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments', 'details', 'image', 'describe', 'description']
+
+
 class ProductsSerializer(serializers.ModelSerializer):
     type = TypesSerializer()
     details = DetailsSerialiser(many=True, read_only=True)
