@@ -84,6 +84,7 @@ class Product(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         perm = "App.add_products"
         validate, data, status_code = check_permission(request, perm)
+        print("data", request.data)
         if validate:
             try:
                 serializer = CreateProductsSerializer(data=request.data)
@@ -246,7 +247,7 @@ class Describes(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
-                serializer = DescribeSerializer(data=request.data)
+                serializer = DescribeSerializer(data=request.data, many=True)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()

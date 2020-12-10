@@ -13,6 +13,7 @@ SEX_CHOICE = [
 
 
 class MyUsers(AbstractUser):
+    # user = models.ForeignKey(MyUsers, on_delete=models.CASCADE, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     sex = models.IntegerField(choices=SEX_CHOICE, default=1, blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)

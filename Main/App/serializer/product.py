@@ -93,14 +93,14 @@ class CreateProductsSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'sold', 'type', 'from_saleprice', 'to_saleprice', 'comments' ]
 
     def validate(self, attrs):
-        if attrs.get('sold') < 0:
-            raise serializers.ValidationError({'mesage': 'số lượng đã bán phải lớn hơn hoặc bằng 0'})
+        # if attrs.get('sold') < 0:
+        #     raise serializers.ValidationError({'mesage': 'số lượng đã bán phải lớn hơn hoặc bằng 0'})
         if attrs.get('from_saleprice') < 0:
-            raise serializers.ValidationError({'mesage': 'Giá bán thấp nhất phải lớn hơn hoặc bằng 0'})
+            raise serializers.ValidationError({'message': ['Giá bán thấp nhất phải lớn hơn hoặc bằng 0']})
         if attrs.get('to_saleprice') < 0:
-            raise serializers.ValidationError({'mesage': 'Giá bán cao nhất phải lớn hơn hoặc bằng 0'})
+            raise serializers.ValidationError({'message': ['Giá bán cao nhất phải lớn hơn hoặc bằng 0']})
         if attrs.get('to_saleprice') < attrs.get('from_saleprice'):
-            raise serializers.ValidationError({'mesage': 'Giá bán thấp nhất phải lớn hơn hoặc bằng giá bán cao nhất'})
+            raise serializers.ValidationError({'message': ['Giá bán thấp nhất phải lớn hơn hoặc bằng giá bán cao nhất']})
         return attrs
 
 
@@ -113,7 +113,7 @@ class AvatarProductSerializer(serializers.ModelSerializer):
         img = attrs.get('avatar')
         # import pdb; pdb.set_trace()
         if img.content_type not in ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']:
-            raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
+            raise serializers.ValidationError({"message": ["Định dạng ảnh không hợp lệ"]})
         return attrs
 
 

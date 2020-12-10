@@ -15,7 +15,10 @@ class OrderView(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             user = MyUsers.objects.get(id=request.user.id)
-            order = Order.objects.filter(user=user).order_by('-time_update')
+            if user.groups.filter(name='admin').exists():
+                order = Order.objects.all().order_by('-time_update')
+            else:
+                order = Order.objects.filter(user=user).order_by('-time_update')
             stt = int(request.GET.get('status', 0))
             if stt:
                 order = order.filter(status=stt)

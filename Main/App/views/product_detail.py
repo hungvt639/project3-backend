@@ -30,6 +30,26 @@ class DetailProducts(generics.ListCreateAPIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    def post(self, request, *args, **kwargs):
+        perm = "App.change_products"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                id = kwargs.get('id')
+                product = Products.objects.get(id=id)
+                serializer = AvatarProductSerializer(product, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    return Response(data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Products.DoesNotExist:
+                return Response({"message": ["Không có sản phẩm này"]}, status=status.HTTP_404_NOT_FOUND)
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status=status_code)
+
     def put(self, request, *args, **kwargs):
         perm = "App.change_products"
         validate, data, status_code = check_permission(request, perm)
@@ -211,7 +231,7 @@ class DetailDescribes(generics.ListCreateAPIView):
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Describe.DoesNotExist:
-                return Response({"message": "Không có mô tả này"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có mô tả này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -226,7 +246,7 @@ class DetailDescribes(generics.ListCreateAPIView):
                 Describe.objects.get(id=id).delete()
                 return Response(status=status.HTTP_200_OK)
             except Describe.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có mô tả này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
