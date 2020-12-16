@@ -1,7 +1,7 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
-from ..serializer.product import TypesSerializer, ProductsSerializer, DetailsSerialiser, AmountsSerializer, \
-    ImageSerializer, DescribeSerializer, AvatarProductSerializer, UpdateFromPriceProductSerializer, \
-    UpdateToPriceProductSerializer, DetailProductSerializer
+from ..serializer.product import TypesSerializer, ProductsSerializer, EditDetailsSerialiser, AmountsSerializer, \
+    ImageSerializer, DescribeSerializer, AvatarProductSerializer, \
+    DetailProductSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from ..utils.check_permission import check_permission
@@ -110,28 +110,28 @@ class DetailProductsDetails(generics.ListCreateAPIView):
             try:
                 id = kwargs.get('id')
                 detail = Details.objects.get(id=id)
-                serializer = DetailsSerialiser(detail, data=request.data)
+                serializer = EditDetailsSerialiser(detail, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    product = Products.objects.get(id=serializer.data['product'])
-                    details = Details.objects.filter(product=product)
-                    p_min = min(details, key=get_min_price)
-                    p_max = max(details, key=get_min_price)
-
-                    p_serializer = UpdateFromPriceProductSerializer(product, data={'from_saleprice': p_min.saleprice})
-                    if p_serializer.is_valid():
-                        p_serializer.save()
-
-                    p_serializer = UpdateToPriceProductSerializer(product, data={'to_saleprice': p_max.saleprice})
-                    if p_serializer.is_valid():
-                        p_serializer.save()
+                    # product = Products.objects.get(id=serializer.data['product'])
+                    # details = Details.objects.filter(product=product)
+                    # p_min = min(details, key=get_min_price)
+                    # p_max = max(details, key=get_min_price)
+                    #
+                    # p_serializer = UpdateFromPriceProductSerializer(product, data={'from_saleprice': p_min.saleprice})
+                    # if p_serializer.is_valid():
+                    #     p_serializer.save()
+                    #
+                    # p_serializer = UpdateToPriceProductSerializer(product, data={'to_saleprice': p_max.saleprice})
+                    # if p_serializer.is_valid():
+                    #     p_serializer.save()
                     data = serializer.data.copy()
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Details.DoesNotExist:
                 return Response({"message": ["Không có sản phẩm này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status=status_code)
 
@@ -141,12 +141,14 @@ class DetailProductsDetails(generics.ListCreateAPIView):
         if validate:
             try:
                 id = kwargs.get("id")
-                Details.objects.get(id=id).delete()
-                return Response(status=status.HTTP_200_OK)
+                detail = Details.objects.get(id=id)
+                detail.on_delete = True
+                detail.save()
+                return Response({"message": ["Xóa thành công."]}, status=status.HTTP_200_OK)
             except Details.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có sản phẩm này."]}, status=status.HTTP_404_NOT_FOUND)
             except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": ["Đã có lỗi sảy ra, bạn vui lòng thử lại sau."]}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
 

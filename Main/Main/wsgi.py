@@ -18,6 +18,5 @@ application = get_wsgi_application()
 
 try:
     createGroup()
-    print(12345)
 except:
     pass

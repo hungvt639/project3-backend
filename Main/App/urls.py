@@ -10,7 +10,7 @@ urlpatterns = [
     path('product/detail/', product.Detail.as_view()),
     path('product/detail/<int:id>/', product_detail.DetailProductsDetails.as_view()),
     path('product/amount/', product.Amount.as_view()),
-    path('product/image/', product.Images.as_view()),
+    path('product/image/<uuid:id>/', product.Images.as_view()),
     path('product/image/<int:id>/', product_detail.DetailImages.as_view()),
     path('product/describe/', product.Describes.as_view()),
     path('product/describe/<int:id>/', product_detail.DetailDescribes.as_view()),

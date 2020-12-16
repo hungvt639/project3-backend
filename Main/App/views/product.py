@@ -1,6 +1,6 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
-from ..serializer.product import TypesSerializer, ProductsLítSerializer, DetailsSerialiser, AmountsSerializer, \
-    ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, CreateProductsSerializer, DescriptionSerializer
+from ..serializer.product import TypesSerializer, ProductsLítSerializer, DetailsSerialiser, CreateAmountsSerializer, \
+    ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, CreateProductsSerializer, DescriptionSerializer, AmountsSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from django.core.paginator import Paginator
@@ -15,7 +15,7 @@ class Type(generics.ListCreateAPIView):
         type = Types.objects.filter(on_delete=False)
         serializer = TypesSerializer(type, many=True)
         page = int(request.GET.get('page', 1))
-        limit = int(request.GET.get('limit', 20))
+        limit = int(request.GET.get('limit', 200))
         pagination = Paginator(serializer.data, limit)
         result = pagination.get_page(page)
         response = {
@@ -61,8 +61,8 @@ class Product(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
-        type = Types.objects.filter(on_delete=False)
-        product = Products.objects.filter(type__in=type, on_delete=False)
+        # type = Types.objects.filter(on_delete=False)
+        product = Products.objects.filter(type__on_delete=False, on_delete=False)
         type = int(request.GET.get('type', 0))
         type = Types.objects.filter(id=type)
         if type:
@@ -107,7 +107,15 @@ class Detail(generics.ListCreateAPIView):
     serializer_class = DetailsSerialiser
 
     def get(self, request, *args, **kwargs):
-        detail = Details.objects.all()
+        detail = Details.objects.filter(on_delete=False, product__on_delete=False, product__type__on_delete=False)
+        type = int(request.GET.get('type', 0))
+        # type = Types.objects.filter(id=type)
+        if type:
+            detail = detail.filter(product__type__id=type)
+        product = request.GET.get('product', "0")
+        # type = Types.objects.filter(id=type)
+        if product != "0":
+            detail = detail.filter(product__id=product)
         serializer = DetailProductSerializer(detail, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
@@ -137,7 +145,7 @@ class Detail(generics.ListCreateAPIView):
                     return Response(response, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except:
-                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
 
@@ -147,7 +155,7 @@ class Amount(generics.ListCreateAPIView):
     serializer_class = AmountsSerializer
 
     def get(self, request, *args, **kwargs):
-        amount = Amounts.objects.all()
+        amount = Amounts.objects.all().order_by('time_create')
         serializer = AmountsSerializer(amount, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
@@ -167,24 +175,15 @@ class Amount(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
-                detail = Details.objects.get(id=request.data['detail'])
-                d_serializer = UpdateAmountDetailProductSerializer(detail, data={'amount': request.data['amount']+detail.amount})
-                serializer = AmountsSerializer(data=request.data)
-                if d_serializer.is_valid():
-                    if serializer.is_valid():
-                        d_serializer.save()
-                        serializer.save()
-                        data = serializer.data.copy()
-                        response = {
-                            "data": data
-                        }
-                        return Response(response, status=status.HTTP_200_OK)
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                return Response(d_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except Details.DoesNotExist:
-                return Response({"message": "Không có sản phẩm này"}, status=status.HTTP_404_NOT_FOUND)
+                serializer = CreateAmountsSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    return Response(data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Exception: raise  Exception
             except:
-                return Response(status = status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
 
@@ -194,19 +193,20 @@ class Images(generics.ListCreateAPIView):
     serializer_class = ImageSerializer
     parser_classes = (parsers.JSONParser, parsers.MultiPartParser,)
 
-    def get(self, request, *args, **kwargs):
-        image = Image.objects.all()
-        serializer = ImageSerializer(image, many=True)
-        response = {
-            "data": serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
+    # def get(self, request, *args, **kwargs):
+    #     image = Image.objects.all()
+    #     serializer = ImageSerializer(image, many=True)
+    #     response = {
+    #         "data": serializer.data
+    #     }
+    #     return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         perm = "App.add_image"
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
+                request.data['product']=kwargs.get("id")
                 serializer = ImageSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()

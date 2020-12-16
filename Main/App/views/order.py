@@ -57,9 +57,9 @@ class OrderView(generics.ListCreateAPIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e: raise e
             except:
-                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(data, status_code)
+            return Response(data, status=status_code)
 
 
 class DetailOrderView(generics.ListCreateAPIView):
