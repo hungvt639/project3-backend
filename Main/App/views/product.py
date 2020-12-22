@@ -211,10 +211,7 @@ class Images(generics.ListCreateAPIView):
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
-                    response = {
-                        "data": data
-                    }
-                    return Response(response, status=status.HTTP_200_OK)
+                    return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except:
                 return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
@@ -258,5 +255,38 @@ class Describes(generics.ListCreateAPIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except:
                 return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status_code)
+
+
+class DescriptionView(generics.ListCreateAPIView):
+    parser_classes = (parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser,)
+    def post(self, request, *args, **kwargs):
+        perm = "App.add_description"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                datas=[]
+                for i in range(len(request.data)-1):
+                    dt = request.data.getlist('data[{}]'.format(i))
+                    if dt[0] or dt[1]:
+                        dta = {'product': request.data['product']}
+                        if dt[0]:
+                            dta['text'] = dt[0]
+                        if dt[1]:
+                            dta['img'] = dt[1]
+                        datas.append(dta)
+                print(datas)
+                serializer = DescriptionSerializer(data=datas, many=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    return Response(data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                try:
+                    Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+                except:
+                    return Response({"message": [e]}, status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)

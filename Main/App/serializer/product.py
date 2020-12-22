@@ -74,8 +74,9 @@ class DescriptionSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         img = attrs.get('img')
-        if img.content_type not in ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']:
-            raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
+        if img:
+            if img.content_type not in ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']:
+                raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
         return attrs
 
 

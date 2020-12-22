@@ -14,6 +14,7 @@ urlpatterns = [
     path('product/image/<int:id>/', product_detail.DetailImages.as_view()),
     path('product/describe/', product.Describes.as_view()),
     path('product/describe/<int:id>/', product_detail.DetailDescribes.as_view()),
+    path('product/description/', product.DescriptionView.as_view()),
 
     path('cart/', cart.CartView.as_view()),
     path('cart/<int:id>/', cart.DetailCartView.as_view()),

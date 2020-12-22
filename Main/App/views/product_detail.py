@@ -267,8 +267,10 @@ class DetailImages(generics.ListCreateAPIView):
                 Image.objects.get(id=id).delete()
                 return Response(status=status.HTTP_200_OK)
             except Describe.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": ["Không có ảnh này!"]}, status=status.HTTP_404_NOT_FOUND)
             except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": ["Đã có lỗi sảy ra, bạn vui lòng thử lại sau!"]}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
+
+

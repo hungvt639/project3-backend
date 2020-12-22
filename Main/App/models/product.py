@@ -77,4 +77,4 @@ class Description(models.Model):
     img = models.FileField(upload_to='image/description/', null=True, blank=True)
 
     def __str__(self):
-        return str(self.product)+ " - " + self.text
+        return str(self.product)+ " - " + str(self.text)
