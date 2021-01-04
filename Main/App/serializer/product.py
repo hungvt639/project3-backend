@@ -2,11 +2,25 @@ from rest_framework import serializers
 from ..models.product import Types, Products, Details, Amounts, Image, Describe, Description
 from ..utils.function import get_min_price
 
+
+class TypeProductdetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Details
+        fields = ['id', 'size', 'color', 'price', 'saleprice','amount', 'on_delete']
+
+class TypeProductSerializer(serializers.ModelSerializer):
+    details = TypeProductdetailSerializer( read_only=True, many=True)
+    class Meta:
+        model = Products
+        fields = ['id', 'name', 'details', 'on_delete']
+
+
 class TypesSerializer(serializers.ModelSerializer):
 
+    products = TypeProductSerializer(many=True, read_only=True)
     class Meta:
         model = Types
-        fields = ['id', 'type']
+        fields = ['id', 'type', "products"]
 
 
 

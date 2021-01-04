@@ -1,4 +1,4 @@
-from ..models.product import Types, Products, Details, Amounts, Image, Describe
+from ..models.product import Types, Products, Details, Amounts, Image, Describe, Description
 from ..serializer.product import TypesSerializer, ProductsSerializer, EditDetailsSerialiser, AmountsSerializer, \
     ImageSerializer, DescribeSerializer, AvatarProductSerializer, \
     DetailProductSerializer
@@ -274,3 +274,40 @@ class DetailImages(generics.ListCreateAPIView):
             return Response(data, status_code)
 
 
+class DetailDescription(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def put(self, request, *args, **kwargs):
+        perm = "App.change_description"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                id = kwargs.get('id')
+                describe = Describe.objects.get(id=id)
+                serializer = DescribeSerializer(describe, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    data = serializer.data.copy()
+                    return Response(data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Describe.DoesNotExist:
+                return Response({"message": ["Không có mô tả này"]}, status=status.HTTP_404_NOT_FOUND)
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status=status_code)
+
+    def delete(self, request, *args, **kwargs):
+        perm = "App.delete_description"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            try:
+                id = kwargs.get("id")
+                Description.objects.get(id=id).delete()
+                return Response(status=status.HTTP_200_OK)
+            except Describe.DoesNotExist:
+                return Response({"message": ["Không có mô tả chi tiết này!"]}, status=status.HTTP_404_NOT_FOUND)
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data, status_code)

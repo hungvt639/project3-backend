@@ -109,11 +109,9 @@ class Detail(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         detail = Details.objects.filter(on_delete=False, product__on_delete=False, product__type__on_delete=False)
         type = int(request.GET.get('type', 0))
-        # type = Types.objects.filter(id=type)
         if type:
             detail = detail.filter(product__type__id=type)
         product = request.GET.get('product', "0")
-        # type = Types.objects.filter(id=type)
         if product != "0":
             detail = detail.filter(product__id=product)
         serializer = DetailProductSerializer(detail, many=True)
@@ -155,20 +153,31 @@ class Amount(generics.ListCreateAPIView):
     serializer_class = AmountsSerializer
 
     def get(self, request, *args, **kwargs):
-        amount = Amounts.objects.all().order_by('time_create')
-        serializer = AmountsSerializer(amount, many=True)
-        page = int(request.GET.get('page', 1))
-        limit = int(request.GET.get('limit', 20))
-        pagination = Paginator(serializer.data, limit)
-        result = pagination.get_page(page)
-        response = {
-            "total": amount.count(),
-            "data": result.object_list,
-            "page": result.number,
-            "has_next": result.has_next(),
-            "has_prev": result.has_previous()
-        }
-        return Response(response, status=status.HTTP_200_OK)
+        perm = "App.view_amounts"
+        validate, data, status_code = check_permission(request, perm)
+        if validate:
+            amount = Amounts.objects.all().order_by('-time_create')
+            type = int(request.GET.get('type', 0))
+            if type:
+                amount = amount.filter(detail__product__type__id=type)
+            product = request.GET.get('product', "0")
+            if product != "0":
+                amount = amount.filter(detail__product__id=product)
+            serializer = AmountsSerializer(amount, many=True)
+            page = int(request.GET.get('page', 1))
+            limit = int(request.GET.get('limit', 20))
+            pagination = Paginator(serializer.data, limit)
+            result = pagination.get_page(page)
+            response = {
+                "total": amount.count(),
+                "data": result.object_list,
+                "page": result.number,
+                "has_next": result.has_next(),
+                "has_prev": result.has_previous()
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            return Response(data, status_code)
 
     def post(self, request, *args, **kwargs):
         perm = "App.add_amounts"
