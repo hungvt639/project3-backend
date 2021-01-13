@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from django.core.paginator import Paginator
 from ..utils.check_permission import check_permission
+from django.db.models import Q
 
 
 class Type(generics.ListCreateAPIView):
@@ -67,6 +68,13 @@ class Product(generics.ListCreateAPIView):
         type = Types.objects.filter(id=type)
         if type:
             product = product.filter(type=type.first())
+        froms = int(request.GET.get('from', 0))
+        tos = int(request.GET.get('to', 0))
+        if froms and tos:
+            product = product.filter(Q(from_saleprice__lte=froms, to_saleprice__gte=froms) | Q(from_saleprice__lte=tos, to_saleprice__gte=tos) | Q(from_saleprice__gte=froms, to_saleprice__lte=tos))
+        inputs = request.GET.get('input', 0)
+        if inputs:
+            product = product.filter(Q(name__contains=inputs) | Q(name__contains=inputs.lower()) | Q(name__contains=inputs.upper()))
         serializer = ProductsLítSerializer(product, many=True)
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 20))
@@ -133,7 +141,12 @@ class Detail(generics.ListCreateAPIView):
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
-                serializer = DetailsSerialiser(data=request.data)
+
+                # import  pdb; pdb.set_trace()
+                data = [i for i in request.data if not Details.objects.filter(product__id=i['product'], color=i['color'], size=i['size'], on_delete=False)]
+                # print('data', data)
+                # import pdb; pdb.set_trace()
+                serializer = DetailsSerialiser(data=data, many=True)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
@@ -142,8 +155,11 @@ class Detail(generics.ListCreateAPIView):
                     }
                     return Response(response, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                try:
+                    return Response({'message': [e]}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status_code)
 

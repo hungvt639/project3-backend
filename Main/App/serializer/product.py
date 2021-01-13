@@ -29,7 +29,7 @@ class DetailsSerialiser(serializers.ModelSerializer):
 
     class Meta:
         model = Details
-        fields = ['id', 'product', 'size', 'color', 'price', 'saleprice', 'amount']
+        fields = ['id', 'product', 'size', 'color', 'price', 'saleprice', 'amount', 'on_delete']
         read_only_fields=['amount']
 
     def validate(self, attrs):
@@ -80,11 +80,29 @@ class DescribeSerializer(serializers.ModelSerializer):
         model = Describe
         fields = ['id', 'product', 'context']
 
+class EditDescribeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Describe
+        fields = ['id', 'product', 'context']
+        read_only_fields = ['product']
 
 class DescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Description
         fields = ['id', 'product', 'text', 'img']
+
+    def validate(self, attrs):
+        img = attrs.get('img')
+        if img:
+            if img.content_type not in ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']:
+                raise serializers.ValidationError({"message": "Định dạng ảnh không hợp lệ"})
+        return attrs
+
+class EditDescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Description
+        fields = ['id', 'product', 'text', 'img']
+        read_only_fields = ['product']
 
     def validate(self, attrs):
         img = attrs.get('img')
@@ -247,3 +265,4 @@ class CreateAmountsSerializer(serializers.ModelSerializer):
             detail.save()
         amounts.save()
         return amounts
+

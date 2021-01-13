@@ -1,7 +1,7 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe, Description
 from ..serializer.product import TypesSerializer, ProductsSerializer, EditDetailsSerialiser, AmountsSerializer, \
     ImageSerializer, DescribeSerializer, AvatarProductSerializer, \
-    DetailProductSerializer
+    DetailProductSerializer, CreateProductsSerializer, EditDescribeSerializer, EditDescriptionSerializer, DetailsSerialiser
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from ..utils.check_permission import check_permission
@@ -19,11 +19,16 @@ class DetailProducts(generics.ListCreateAPIView):
             id = kwargs.get('id')
             product = Products.objects.get(id=id)
             serializer = ProductsSerializer(product)
+            detail = Details.objects.filter(product=product, on_delete=False)
+            detail_s=DetailsSerialiser(detail, many=True)
+            products=serializer.data
+            # import pdb; pdb.set_trace()
+            products['details']=detail_s.data[::-1]
             same_product = Products.objects.filter(type=product.type).exclude(id=id)[0:4]
             # import pdb; pdb.set_trace()
             serializer_same = ProductsSerializer(same_product, many=True)
             res = {
-                "product": serializer.data,
+                "product": products,
                 "same_product": serializer_same.data
             }
             return Response(res, status=status.HTTP_200_OK)
@@ -60,7 +65,7 @@ class DetailProducts(generics.ListCreateAPIView):
                 if "avatar" in request.data:
                     serializer = AvatarProductSerializer(product, data=request.data)
                 else:
-                    serializer = ProductsSerializer(product, data=request.data)
+                    serializer = CreateProductsSerializer(product, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
@@ -110,27 +115,22 @@ class DetailProductsDetails(generics.ListCreateAPIView):
             try:
                 id = kwargs.get('id')
                 detail = Details.objects.get(id=id)
-                serializer = EditDetailsSerialiser(detail, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    # product = Products.objects.get(id=serializer.data['product'])
-                    # details = Details.objects.filter(product=product)
-                    # p_min = min(details, key=get_min_price)
-                    # p_max = max(details, key=get_min_price)
-                    #
-                    # p_serializer = UpdateFromPriceProductSerializer(product, data={'from_saleprice': p_min.saleprice})
-                    # if p_serializer.is_valid():
-                    #     p_serializer.save()
-                    #
-                    # p_serializer = UpdateToPriceProductSerializer(product, data={'to_saleprice': p_max.saleprice})
-                    # if p_serializer.is_valid():
-                    #     p_serializer.save()
-                    data = serializer.data.copy()
-                    return Response(data, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                det = Details.objects.filter(product=detail.product, color=request.data['color'],
+                                             size=request.data['size'], on_delete=False).exclude(id=id)
+                if det:
+                    return Response({"message": ["Đã có sản phẩm này"]}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    serializer = EditDetailsSerialiser(detail, data=request.data)
+                    if serializer.is_valid():
+                        serializer.save()
+
+                        data = serializer.data.copy()
+                        return Response(data, status=status.HTTP_200_OK)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Details.DoesNotExist:
                 return Response({"message": ["Không có sản phẩm này"]}, status=status.HTTP_404_NOT_FOUND)
-            except:
+            except Exception as e:
+                raise e
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status=status_code)
@@ -226,7 +226,7 @@ class DetailDescribes(generics.ListCreateAPIView):
             try:
                 id = kwargs.get('id')
                 describe = Describe.objects.get(id=id)
-                serializer = DescribeSerializer(describe, data=request.data)
+                serializer = EditDescribeSerializer(describe, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
@@ -276,22 +276,22 @@ class DetailImages(generics.ListCreateAPIView):
 
 class DetailDescription(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
+    parser_classes = (parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser,)
     def put(self, request, *args, **kwargs):
         perm = "App.change_description"
         validate, data, status_code = check_permission(request, perm)
         if validate:
             try:
                 id = kwargs.get('id')
-                describe = Describe.objects.get(id=id)
-                serializer = DescribeSerializer(describe, data=request.data)
+                describe = Description.objects.get(id=id)
+                serializer = EditDescriptionSerializer(describe, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     data = serializer.data.copy()
                     return Response(data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except Describe.DoesNotExist:
-                return Response({"message": ["Không có mô tả này"]}, status=status.HTTP_404_NOT_FOUND)
+            except Description.DoesNotExist:
+                return Response({"message": ["Không có chi tiết này"]}, status=status.HTTP_404_NOT_FOUND)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:

@@ -16,14 +16,14 @@ class OrderView(generics.ListCreateAPIView):
         if validate:
             user = MyUsers.objects.get(id=request.user.id)
             if user.groups.filter(name='admin').exists():
-                order = Order.objects.all().order_by('-time_update')
+                order = Order.objects.all()
             else:
-                order = Order.objects.filter(user=user).order_by('-time_update')
+                order = Order.objects.filter(user=user)
             stt = int(request.GET.get('status', 0))
             if stt:
                 order = order.filter(status=stt)
             # import pdb; pdb.set_trace()
-            serializer = OrderSerializer(order, many=True)
+            serializer = OrderSerializer(order.order_by('-time_update'), many=True)
             page = int(request.GET.get('page', 1))
             limit = int(request.GET.get('limit', 20))
             pagination = Paginator(serializer.data, limit)
