@@ -85,14 +85,35 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
 
 class UpdateOrderManageSerializer(serializers.ModelSerializer):
+    time_create = serializers.DateTimeField(format='%H:%M:%S %d-%m-%Y', read_only=True)
+    time_update = serializers.DateTimeField(format='%H:%M:%S %d-%m-%Y', read_only=True)
+    product = OrderProductSerializer(many=True, read_only=True)
+    delivery_address = DeliveryAddressSerializer(read_only=True)
     class Meta:
         model = Order
-        fields = ['status']
+        fields = ['id', 'user', 'price', 'status', 'time_create', 'message', 'time_update', 'product',
+                  'delivery_address']
+        read_only_fields = ['id', 'user', 'price', 'time_create', 'message', 'time_update', 'product',
+                            'delivery_address']
 
-    # def validate(self, attrs):
-    #     print(attrs)
-    #     import pdb; pdb.set_trace()
-    #     return attrs
+    def update(self, instance, validated_data):
+        if instance.status == validated_data.get('status'):
+            return instance
+        if instance.status == 5:
+            products = OrderProduct.objects.filter(order=instance)
+            for product in products:
+                p = product.product_detail
+                p.amount = p.amount - product.amount
+                p.save()
+        elif validated_data.get('status') == 5:
+            products = OrderProduct.objects.filter(order=instance)
+            for product in products:
+                p = product.product_detail
+                p.amount = p.amount + product.amount
+                p.save()
+        instance.status = validated_data.get('status')
+        instance.save()
+        return instance
 
 
 class UpdateOrderUserSerializer(serializers.ModelSerializer):

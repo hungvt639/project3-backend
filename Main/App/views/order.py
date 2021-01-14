@@ -74,7 +74,7 @@ class DetailOrderView(generics.ListCreateAPIView):
                 order = order.get(id=id)
                 serializer = OrderSerializer(order)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            except Exception as e: raise e
+            # except Exception as e: raise e
             except:
                 return Response({"message": "Không có đơn hàng này"}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -87,13 +87,16 @@ class DetailOrderView(generics.ListCreateAPIView):
             try:
                 id = kwargs.get('id')
                 user = MyUsers.objects.get(id=request.user.id)
-                order = Order.objects.filter(user=user)
-                order = order.get(id=id)
-                if order.status >= 5:
-                    return Response({'message': ['Không thể thay đổi trạng thái đơn hàng đã hủy']}, status=status.HTTP_400_BAD_REQUEST)
+                # order = Order.objects.filter(user=user)
                 if user.groups.filter(name='admin').exists():
+                    order = Order.objects.get(id=id)
                     serializer = UpdateOrderManageSerializer(order, data=request.data)
                 else:
+                    order = Order.objects.filter(user=user)
+                    order = order.get(id=id)
+                    if order.status >= 5:
+                        return Response({'message': ['Không thể thay đổi trạng thái đơn hàng đã hủy']},
+                                        status=status.HTTP_400_BAD_REQUEST)
                     if order.status > 1:
                         return Response({'message': ['Không thể hủy trạng thái đơn hàng khi đã chốt đơn']}, status=status.HTTP_400_BAD_REQUEST)
                     serializer = UpdateOrderUserSerializer(order, data=request.data)
@@ -104,7 +107,8 @@ class DetailOrderView(generics.ListCreateAPIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except Order.DoesNotExist:
                 return Response({"message": "Không có đơn hàng này"}, status=status.HTTP_404_NOT_FOUND)
-            except:
+            except Exception as e:
+                raise e
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data, status=status_code)
