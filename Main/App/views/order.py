@@ -23,7 +23,7 @@ class OrderView(generics.ListCreateAPIView):
             if stt:
                 order = order.filter(status=stt)
             # import pdb; pdb.set_trace()
-            serializer = OrderSerializer(order.order_by('-time_update'), many=True)
+            serializer = OrderSerializer(order.order_by('-time_create'), many=True)
             page = int(request.GET.get('page', 1))
             limit = int(request.GET.get('limit', 20))
             pagination = Paginator(serializer.data, limit)

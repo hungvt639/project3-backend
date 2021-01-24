@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import product, product_detail, cart, notify, order, deliveryaddress
+from .views import product, product_detail, cart, notify, order, deliveryaddress, promotion
 
 
 urlpatterns = [
@@ -28,4 +28,10 @@ urlpatterns = [
 
     path('delivery-address/', deliveryaddress.DeliveryAddressView.as_view()),
     path('delivery-address/<int:id>/', deliveryaddress.DetailDeliveryAddressView.as_view()),
+
+    path('promotion/', promotion.PromotionView.as_view()),
+    path('promotion/<int:id>/', promotion.DetailPromotionView.as_view()),
+
+    path('promotionproducts/', promotion.AddProductPromotionView.as_view()),
+    path('promotionproducts/<int:id>/', promotion.PromotionProductDetailView.as_view()),
 ]

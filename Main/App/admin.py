@@ -4,6 +4,7 @@ from .models.cart import Carts
 from .models.notify import Notify
 from .models.order import Order, OrderProduct
 from .models.deliveryaddress import DeliveryAddress
+from .models.promotion import Promotions, PromotionProducts, PromotionTypes
 
 admin.site.register(Types)
 admin.site.register(Products)
@@ -21,3 +22,7 @@ admin.site.register(Order)
 admin.site.register(OrderProduct)
 
 admin.site.register(DeliveryAddress)
+
+admin.site.register(Promotions)
+admin.site.register(PromotionProducts)
+admin.site.register(PromotionTypes)
