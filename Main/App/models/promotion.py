@@ -15,6 +15,7 @@ class Promotions(models.Model):
     comment = models.CharField(max_length=200, blank=True)
     time_create = models.DateTimeField(auto_now_add=True)
     on_delete = models.BooleanField(default=False)
+    time_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{} - {} - {}: {} - {}".format(self.name, self.type, self.value, self.time_from, self.time_to)

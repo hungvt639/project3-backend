@@ -1,13 +1,16 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe, Description
 from ..serializer.product import TypesSerializer, ProductsSerializer, EditDetailsSerialiser, AmountsSerializer, \
     ImageSerializer, DescribeSerializer, AvatarProductSerializer, \
-    DetailProductSerializer, CreateProductsSerializer, EditDescribeSerializer, EditDescriptionSerializer, DetailsSerialiser
+    DetailProductSerializer, CreateProductsSerializer, EditDescribeSerializer, EditDescriptionSerializer, DetailsSerialiser, PromotionProductSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from ..utils.check_permission import check_permission
 from ..utils.function import get_min_price
 from django.core.paginator import Paginator
 from .product import Type
+from django.utils import timezone
+from ..models.promotion import PromotionProducts
+
 
 
 class DetailProducts(generics.ListCreateAPIView):
@@ -16,6 +19,7 @@ class DetailProducts(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         try:
+            now = timezone.now()
             id = kwargs.get('id')
             product = Products.objects.get(id=id)
             serializer = ProductsSerializer(product)
@@ -24,9 +28,27 @@ class DetailProducts(generics.ListCreateAPIView):
             products=serializer.data
             # import pdb; pdb.set_trace()
             products['details']=detail_s.data[::-1]
+            pp = PromotionProducts.objects.filter(product__id=products['id'], promotion__on_delete=False, promotion__time_from__lt=now, promotion__time_to__gt=now).order_by('-promotion__time_update', '-promotion__time_create').first()
+            if pp:
+                serializer = PromotionProductSerializer(pp)
+                products['promotion'] = serializer.data
+            else:
+                products['promotion'] = 0
             same_product = Products.objects.filter(type=product.type).exclude(id=id)[0:4]
             # import pdb; pdb.set_trace()
             serializer_same = ProductsSerializer(same_product, many=True)
+            same = serializer_same.data
+
+            for d in same:
+                pp = PromotionProducts.objects.filter(product__id=d['id'], promotion__on_delete=False,
+                                                      promotion__time_from__lt=now,
+                                                      promotion__time_to__gt=now).order_by('-promotion__time_update',
+                                                                                           '-promotion__time_create').first()
+                if pp:
+                    serializer = PromotionProductSerializer(pp)
+                    d['promotion'] = serializer.data
+                else:
+                    d['promotion'] = 0
             res = {
                 "product": products,
                 "same_product": serializer_same.data

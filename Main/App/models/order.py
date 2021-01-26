@@ -3,7 +3,7 @@ from Users.models import MyUsers
 from .product import Details
 from .deliveryaddress import DeliveryAddress
 import uuid
-
+from ..models.promotion import Promotions
 ORDER_STATUS = [
     (0, "Đặt đơn"),
     (1, "Chờ xác nhận"),
@@ -33,3 +33,4 @@ class OrderProduct(models.Model):
     order = models.ForeignKey(Order, related_name="product", on_delete=models.CASCADE)
     product_detail = models.ForeignKey(Details, related_name="product_detail", on_delete=models.CASCADE)
     amount = models.IntegerField()
+    promotion = models.ForeignKey(Promotions, related_name="order", on_delete=models.CASCADE, blank=True, null=True)

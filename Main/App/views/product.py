@@ -1,13 +1,14 @@
 from ..models.product import Types, Products, Details, Amounts, Image, Describe
 from ..serializer.product import TypesSerializer, ProductsLítSerializer, DetailsSerialiser, CreateAmountsSerializer, \
     ImageSerializer, DescribeSerializer, DetailProductSerializer, UpdateAmountDetailProductSerializer, \
-    CreateProductsSerializer, DescriptionSerializer, AmountsSerializer
+    CreateProductsSerializer, DescriptionSerializer, AmountsSerializer, PromotionProductSerializer
 from rest_framework.response import Response
 from rest_framework import status, permissions, parsers, generics
 from django.core.paginator import Paginator
 from ..utils.check_permission import check_permission
 from django.db.models import Q
-
+from ..models.promotion import PromotionProducts
+from django.utils import timezone
 
 class Type(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -81,9 +82,18 @@ class Product(generics.ListCreateAPIView):
         limit = int(request.GET.get('limit', 20))
         pagination = Paginator(serializer.data, limit)
         result = pagination.get_page(page)
+        data = result.object_list
+        now = timezone.now()
+        for d in data:
+            pp = PromotionProducts.objects.filter(product__id=d['id'], promotion__on_delete=False, promotion__time_from__lt=now, promotion__time_to__gt=now).order_by('-promotion__time_update', '-promotion__time_create').first()
+            if pp:
+                serializer = PromotionProductSerializer(pp)
+                d['promotion']=serializer.data
+            else:
+                d['promotion']=0
         response = {
             "total": product.count(),
-            "data": result.object_list,
+            "data": data,
             "page": result.number,
             "has_next": result.has_next(),
             "has_prev": result.has_previous()

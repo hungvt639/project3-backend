@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from ..models.product import Types, Products, Details, Amounts, Image, Describe, Description
 from ..utils.function import get_min_price
-
+from ..models.promotion import Promotions, PromotionProducts
 
 class TypeProductdetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -266,3 +266,17 @@ class CreateAmountsSerializer(serializers.ModelSerializer):
         amounts.save()
         return amounts
 
+
+class PromotionSerializer(serializers.ModelSerializer):
+    time_create = serializers.DateTimeField(format='%H:%M:%S %d/%m/%Y', read_only=True)
+    time_from = serializers.DateTimeField(format='%H:%M:%S %d/%m/%Y', read_only=True)
+    time_to = serializers.DateTimeField(format='%H:%M:%S %d/%m/%Y', read_only=True)
+    class Meta:
+        model = Promotions
+        fields = ['id' ,'name','type', 'time_from', 'time_to', 'value', 'max_value', 'comment', 'time_create']
+
+class PromotionProductSerializer(serializers.ModelSerializer):
+    promotion = PromotionSerializer(read_only=True)
+    class Meta:
+        model = PromotionProducts
+        fields = ['id' ,'promotion', 'product']

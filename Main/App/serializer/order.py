@@ -5,14 +5,26 @@ from .deliveryaddress import DeliveryAddressSerializer
 from ..models.deliveryaddress import DeliveryAddress
 from ..models.cart import Carts
 from .product import DetailProductSerializer
+from ..models.promotion import Promotions, PromotionProducts
+from django.utils import timezone
+
+
+class PromotionSerializer(serializers.ModelSerializer):
+    time_create = serializers.DateTimeField(format='%H:%M:%S %d/%m/%Y', read_only=True)
+    time_from = serializers.DateTimeField(format='%H:%M:%S %d/%m/%Y', input_formats=['%H:%M:%S %d/%m/%Y'])
+    time_to = serializers.DateTimeField(format='%H:%M:%S %d/%m/%Y', input_formats=['%H:%M:%S %d/%m/%Y'])
+    class Meta:
+        model = Promotions
+        fields = ['id' ,'name','type', 'time_from', 'time_to', 'value', 'max_value', 'comment', 'time_create', 'on_delete',]
+        read_only_fields = ['id' ,'time_create', 'on_delete']
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
     product_detail = DetailProductSerializer()
-
+    promotion = PromotionSerializer()
     class Meta:
         model = OrderProduct
-        fields = ['id', 'product_detail', 'amount']
+        fields = ['id', 'product_detail', 'amount', 'promotion']
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -31,11 +43,19 @@ class CreateOrderProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderProduct
-        fields = ['id', 'product_detail', 'amount']
+        fields = ['id', 'product_detail', 'amount', 'promotion']
 
     def validate(self, attrs):
         if attrs.get('amount') <= 0:
             raise serializers.ValidationError({"message": ["Số lượng sản phẩm phải lớn hơn 0"]})
+        promotion = attrs.get('promotion')
+        if promotion:
+            now = timezone.now()
+            if not promotion.time_from <= now <= promotion.time_to:
+                raise serializers.ValidationError({"message": ["Đã có cập nhận lại giá của sản phẩm, vui lòng xem lại đơn hàng"]})
+            pp = PromotionProducts.objects.filter(promotion=promotion, product=attrs.get('product_detail').product)
+            if not pp:
+                raise serializers.ValidationError({"message": ["Sản phẩm {} không được hưởng khuyến mãi đang chọn".format(attrs.get('product_detail').product.name)]})
         return attrs
 
 
@@ -60,7 +80,8 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             order_product = OrderProduct.objects.create(
                 order=order,
                 product_detail=product.get('product_detail'),
-                amount=product.get('amount')
+                amount=product.get('amount'),
+                promotion=product.get('promotion')
             )
             product_detail = product.get('product_detail')
             user = validated_data.get('user')
